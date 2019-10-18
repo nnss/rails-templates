@@ -12,6 +12,11 @@ def source_paths
   [File.expand_path(File.dirname(__FILE__))]
 end
 
+def copy_templates
+  directory "app", force: true
+end
+
+
 def add_gems
   gem 'devise', '~> 4.7', '>= 4.7.1'
   gem 'friendly_id', '~> 5.3'
@@ -28,11 +33,13 @@ end
 
 def after_bundler_group
   generate 'simple_form:install'
+
 end
 
 def add_users
   # Install Devise
   generate 'devise:install'
+  generate 'devise:views'
 
   # Configure Devise
   environment "config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }",
@@ -58,6 +65,21 @@ webpack: bin/webpack-dev-server
 CODE
 end
 
+def add_tailwind
+  run "yarn add tailwindcss"
+  run "mkdir app/javascript/stylesheets"
+  append_to_file("app/javascript/packs/application.js", 'import "stylesheets/application"')
+  inject_into_file("./postcss.config.js",
+                   "var tailwindcss = require('tailwindcss');\n",  before: "module.exports")
+  inject_into_file("./postcss.config.js", "\n    tailwindcss('./app/javascript/stylesheets/tailwind.config.js'),", after: "plugins: [")
+  run "mkdir app/javascript/stylesheets/components"
+end
+
+# Remove Application CSS
+def remove_app_css
+  remove_file "app/assets/stylesheets/application.css"
+end
+
 
 # Main setup
 source_paths
@@ -65,13 +87,12 @@ source_paths
 add_gems
 
 after_bundle do
-  add_users
   remove_app_css
-  add_sidekiq
+  add_users
   add_foreman
+  add_tailwind
   copy_templates
   add_tailwind
-  add_friendly_id
 
   # Migrate
   rails_command 'acts_as_taggable_on_engine:install:migrations'
