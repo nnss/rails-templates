@@ -1,8 +1,11 @@
 =begin
-Template Name: Kickstart application template - Tailwind CSS
-Author: Andy Leverenz
-Author URI: https://web-crunch.com
-Instructions: $ rails new myapp -d <postgresql, mysql, sqlite> -m template.rb
+  Template Name: Based on Kickstart application template - Tailwind CSS
+  Author: Matias nnss Palomec
+  Author URI: https://github.com/nnss/rails-templates
+  Instructions: $ rails new myapp -d <postgresql, mysql, sqlite> -m btemplate.rb
+
+examples over https://github.com/dao42/rails-template/blob/master/composer.rb
+
 =end
 
 def source_paths
@@ -14,14 +17,17 @@ def add_gems
   gem 'friendly_id', '~> 5.3'
   gem 'sidekiq', '~> 6.0', '>= 6.0.1'
   gem 'simple_form'
-  gem 'awesome_nested_fields'
   gem 'acts-as-taggable-on'
   gem 'cocoon'
   gem 'acts_as_commentable_with_threading'
   gem 'acts_as_votable'
-  gem 'nokogiri'
+  gem 'pagy'
   gem 'recaptcha', :require => 'recaptcha/rails'
 
+end
+
+def after_bundler_group
+  generate 'simple_form:install'
 end
 
 def add_users
@@ -45,7 +51,11 @@ def add_users
 end
 
 def add_foreman
-  copy_file 'Procfile'
+  file "Procfile", <<-CODE
+web: rails server
+sidekiq: sidekiq
+webpack: bin/webpack-dev-server
+CODE
 end
 
 
@@ -64,6 +74,7 @@ after_bundle do
   add_friendly_id
 
   # Migrate
+  rails_command 'acts_as_taggable_on_engine:install:migrations'
   rails_command 'db:create'
   rails_command 'db:migrate'
 
@@ -72,12 +83,7 @@ after_bundle do
   git commit: %Q{ -m "Initial commit" }
 
   say
-  say 'Kickoff app successfully created! 👍', :green
+  say 'app created', :green
   say
-  say 'Switch to your app by running:'
-  say "$ cd #{app_name}", :yellow
-  say
-  say 'Then run:'
-  say '$ rails server', :green
 end
 
