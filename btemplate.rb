@@ -28,7 +28,6 @@ def add_gems
   gem 'acts_as_votable'
   gem 'pagy'
   gem 'recaptcha', :require => 'recaptcha/rails'
-
 end
 
 def after_bundler_group
@@ -87,12 +86,16 @@ source_paths
 add_gems
 
 after_bundle do
+  say "going to remove apps"
   remove_app_css
+  say "going to add users"
   add_users
+  say "going to add foreman"
   add_foreman
+  say "going to add tailwind"
   add_tailwind
+  say "going to copy template"
   copy_templates
-  add_tailwind
 
   # Migrate
   rails_command 'acts_as_taggable_on_engine:install:migrations'
