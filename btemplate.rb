@@ -12,9 +12,6 @@ def source_paths
   [File.expand_path(File.dirname(__FILE__))]
 end
 
-def copy_templates
-  directory "app", force: true
-end
 
 
 def add_gems
@@ -94,8 +91,6 @@ after_bundle do
   add_foreman
   say "going to add tailwind"
   add_tailwind
-  say "going to copy template"
-  copy_templates
 
   # Migrate
   rails_command 'acts_as_taggable_on_engine:install:migrations'
